@@ -81,10 +81,22 @@ export class BookService {
     const cachedBook = await this.db
       .prepare('SELECT * FROM books WHERE id = ?')
       .bind(bookId)
-      .first<Book>();
+      .first<any>();
 
     if (cachedBook) {
-      return cachedBook;
+      return {
+        id: cachedBook.id,
+        title: cachedBook.title,
+        author: cachedBook.author,
+        description: cachedBook.description,
+        coverImageUrl: cachedBook.cover_image_url,
+        pageCount: cachedBook.page_count,
+        publishedDate: cachedBook.published_date,
+        publisher: cachedBook.publisher,
+        language: cachedBook.language,
+        createdAt: cachedBook.created_at,
+        updatedAt: cachedBook.updated_at,
+      };
     }
 
     // Fetch from Open Library
@@ -101,10 +113,35 @@ export class BookService {
 
     const data: OpenLibraryWork = await response.json();
     
+    // Fetch author names
+    let authorName = 'Unknown Author';
+    if (data.authors && data.authors.length > 0) {
+      const authorPromises = data.authors.map(async (authorRef) => {
+        const authorKey = authorRef.author.key.replace('/authors/', '');
+        const authorResponse = await fetch(`https://openlibrary.org/authors/${authorKey}.json`, {
+          headers: {
+            'User-Agent': 'MyReads/1.0 (https://github.com/yourusername/myreads)'
+          }
+        });
+        
+        if (authorResponse.ok) {
+          const authorData: any = await authorResponse.json();
+          return authorData.name || 'Unknown Author';
+        }
+        return null;
+      });
+      
+      const authorNames = await Promise.all(authorPromises);
+      const validAuthors = authorNames.filter((name): name is string => name !== null);
+      if (validAuthors.length > 0) {
+        authorName = validAuthors.join(', ');
+      }
+    }
+    
     const book: Book = {
       id: bookId,
       title: data.title,
-      author: 'Unknown Author', // Will need to fetch author details separately
+      author: authorName,
       description: typeof data.description === 'string' 
         ? data.description 
         : data.description?.value,
