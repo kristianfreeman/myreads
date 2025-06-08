@@ -22,6 +22,7 @@
     "react-router": "7.5.2"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-code": "^1.0.17",
     "@cloudflare/vite-plugin": "1.2.4",
     "@react-router/dev": "7.5.2",
     "@tailwindcss/vite": "4.1.4",
