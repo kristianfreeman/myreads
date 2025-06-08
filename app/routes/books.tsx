@@ -1,35 +1,35 @@
 import { Form, Link, useSearchParams, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { json } from 'react-router';
-import { requireAuth } from '~/services/auth';
-import { BookService } from '~/services/books';
-import type { UserBook } from '~/types';
+import { requireAuth } from '~/services/auth-simple';
+import { BookService } from '~/services/books-simple';
+import type { BookEntry } from '~/types';
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const url = new URL(request.url);
   const status = url.searchParams.get('status') || undefined;
   
   const bookService = new BookService(context);
-  const userBooks = await bookService.getUserBooks(user.id, status);
+  const bookEntries = await bookService.getBookEntries(status);
   
+  const allEntries = status ? await bookService.getBookEntries() : bookEntries;
   const stats = {
-    total: userBooks.length,
-    reading: userBooks.filter(b => b.status === 'reading').length,
-    read: userBooks.filter(b => b.status === 'read').length,
-    wantToRead: userBooks.filter(b => b.status === 'want_to_read').length,
+    total: allEntries.length,
+    reading: allEntries.filter(b => b.status === 'reading').length,
+    read: allEntries.filter(b => b.status === 'read').length,
+    wantToRead: allEntries.filter(b => b.status === 'want_to_read').length,
   };
   
   return json({
-    user,
-    userBooks,
+    bookEntries,
     stats,
     currentStatus: status,
   });
 }
 
 export default function MyBooks() {
-  const { userBooks, stats, currentStatus } = useLoaderData<typeof loader>();
+  const { bookEntries, stats, currentStatus } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   const getStatusLabel = (status: string) => {
@@ -83,12 +83,12 @@ export default function MyBooks() {
               </div>
             </div>
             <div className="flex items-center">
-              <Form method="post" action="/auth/signout">
+              <Form method="post" action="/lock">
                 <button
                   type="submit"
                   className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign out
+                  Lock
                 </button>
               </Form>
             </div>
@@ -139,7 +139,7 @@ export default function MyBooks() {
             </Link>
           </div>
 
-          {userBooks.length === 0 ? (
+          {bookEntries.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 mb-4">
                 {currentStatus
@@ -155,39 +155,39 @@ export default function MyBooks() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userBooks.map((userBook) => (
+              {bookEntries.map((bookEntry) => (
                 <Link
-                  key={userBook.id}
-                  to={`/books/${userBook.bookId}`}
+                  key={bookEntry.id}
+                  to={`/books/${bookEntry.bookId}`}
                   className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
                 >
                   <div className="p-6">
-                    {userBook.book?.coverImageUrl && (
+                    {bookEntry.book?.coverImageUrl && (
                       <img
-                        src={userBook.book.coverImageUrl}
-                        alt={userBook.book.title}
+                        src={bookEntry.book.coverImageUrl}
+                        alt={bookEntry.book.title}
                         className="w-32 h-48 object-cover mx-auto mb-4"
                       />
                     )}
                     <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-                      {userBook.book?.title}
+                      {bookEntry.book?.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">{userBook.book?.author}</p>
+                    <p className="text-gray-600 mb-4">{bookEntry.book?.author}</p>
                     <div className="flex justify-between items-center">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          userBook.status
+                          bookEntry.status
                         )}`}
                       >
-                        {getStatusLabel(userBook.status)}
+                        {getStatusLabel(bookEntry.status)}
                       </span>
-                      {userBook.rating && (
+                      {bookEntry.rating && (
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <span
                               key={i}
                               className={
-                                i < userBook.rating
+                                i < bookEntry.rating
                                   ? 'text-yellow-400'
                                   : 'text-gray-300'
                               }

@@ -1,6 +1,6 @@
-# MyReads - Open Source Goodreads Alternative
+# MyReads - Personal Book Tracking App
 
-A full-featured book tracking application built with React Router 7, Cloudflare Workers, and D1 database. Track your reading journey, discover new books, and share reviews.
+A single-user book tracking application built with React Router 7, Cloudflare Workers, and D1 database. Track your reading journey, discover new books, and write reviews for your personal library.
 
 ## Features
 
@@ -8,7 +8,7 @@ A full-featured book tracking application built with React Router 7, Cloudflare 
 - 🔍 **Book Search**: Search millions of books using the Open Library API
 - ⭐ **Ratings & Reviews**: Rate books and write detailed reviews
 - 📊 **Reading Statistics**: View your reading progress and statistics on a personalized dashboard
-- 🔐 **User Authentication**: Secure authentication system with session management
+- 🔐 **Password Protection**: Simple password-based access control
 - 🌐 **Edge Deployment**: Deployed globally on Cloudflare Workers for low latency
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 
@@ -17,7 +17,7 @@ A full-featured book tracking application built with React Router 7, Cloudflare 
 - **Frontend**: React 19, React Router 7, TypeScript, Tailwind CSS
 - **Backend**: Cloudflare Workers (Edge Runtime)
 - **Database**: Cloudflare D1 (SQLite)
-- **Authentication**: JWT-based sessions with bcrypt password hashing
+- **Authentication**: Simple password protection with bcrypt hashing
 - **Book Data**: Open Library API
 - **Testing**: Vitest (Unit), Playwright (E2E)
 
@@ -51,7 +51,7 @@ npx wrangler d1 create myreads-db
 
 5. Run database migrations:
 ```bash
-npx wrangler d1 execute myreads-db --file=./db/migrations/0001_initial.sql
+npx wrangler d1 execute myreads-db --file=./db/migrations/0002_single_user.sql --local
 ```
 
 6. Generate TypeScript types:
@@ -67,6 +67,8 @@ npm run dev
 ```
 
 Your application will be available at `http://localhost:5173`.
+
+**Default password**: "password" (you should change this in production by updating the `APP_PASSWORD` hash in `wrangler.json`)
 
 ### Testing
 
@@ -98,7 +100,7 @@ npm run build
 
 1. First, run the database migration on your remote database:
 ```bash
-npx wrangler d1 execute myreads-db --file=./db/migrations/0001_initial.sql --remote
+npx wrangler d1 execute myreads-db --file=./db/migrations/0002_single_user.sql --remote
 ```
 
 2. Deploy to Cloudflare Workers:
@@ -106,29 +108,27 @@ npx wrangler d1 execute myreads-db --file=./db/migrations/0001_initial.sql --rem
 npm run deploy
 ```
 
-3. Set production secrets:
+3. Set a secure password hash:
 ```bash
-npx wrangler secret put JWT_SECRET
-# Enter a secure random string when prompted
+# Generate a new password hash using bcrypt (you can use an online tool or Node.js)
+# Then update the APP_PASSWORD in wrangler.json with your new hash
 ```
 
 ## Environment Variables
 
 The following environment variables are configured in `wrangler.json`:
 
-- `JWT_SECRET`: Secret key for JWT token signing (use `wrangler secret` in production)
+- `APP_PASSWORD`: Bcrypt hash of the application password
 - `SESSION_DURATION`: Session duration in milliseconds (default: 24 hours)
 
 ## Database Schema
 
 The application uses the following main tables:
 
-- `users`: User accounts with authentication
 - `books`: Cached book information from Open Library
-- `user_books`: User's book entries with status, ratings, and reviews
+- `book_entries`: Book entries with status, ratings, and reviews
 - `tags`: Book tags
-- `user_book_tags`: Many-to-many relationship for book tags
-- `sessions`: User session management
+- `book_tags`: Many-to-many relationship for book tags
 
 ## API Integration
 

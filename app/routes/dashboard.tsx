@@ -1,43 +1,43 @@
 import { Form, Link, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { json } from 'react-router';
-import { requireAuth } from '~/services/auth';
-import { BookService } from '~/services/books';
+import { requireAuth } from '~/services/auth-simple';
+import { BookService } from '~/services/books-simple';
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const bookService = new BookService(context);
-  const userBooks = await bookService.getUserBooks(user.id);
+  const bookEntries = await bookService.getBookEntries();
   
   const stats = {
-    total: userBooks.length,
-    reading: userBooks.filter(b => b.status === 'reading').length,
-    read: userBooks.filter(b => b.status === 'read').length,
-    wantToRead: userBooks.filter(b => b.status === 'want_to_read').length,
-    averageRating: userBooks
+    total: bookEntries.length,
+    reading: bookEntries.filter(b => b.status === 'reading').length,
+    read: bookEntries.filter(b => b.status === 'read').length,
+    wantToRead: bookEntries.filter(b => b.status === 'want_to_read').length,
+    averageRating: bookEntries
       .filter(b => b.rating)
       .reduce((sum, b) => sum + (b.rating || 0), 0) / 
-      (userBooks.filter(b => b.rating).length || 1),
-    thisYear: userBooks.filter(b => 
+      (bookEntries.filter(b => b.rating).length || 1),
+    thisYear: bookEntries.filter(b => 
       b.status === 'read' && 
       b.finishDate && 
       new Date(b.finishDate).getFullYear() === new Date().getFullYear()
     ).length,
   };
   
-  const recentlyAdded = userBooks
+  const recentlyAdded = bookEntries
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
     
-  const currentlyReading = userBooks
+  const currentlyReading = bookEntries
     .filter(b => b.status === 'reading')
     .slice(0, 4);
   
-  return json({ user, stats, recentlyAdded, currentlyReading });
+  return json({ stats, recentlyAdded, currentlyReading });
 }
 
 export default function Dashboard() {
-  const { user, stats, recentlyAdded, currentlyReading } = useLoaderData<typeof loader>();
+  const { stats, recentlyAdded, currentlyReading } = useLoaderData<typeof loader>();
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,13 +70,12 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center">
-              <span className="text-gray-700 mr-4">Hi, {user.username}!</span>
-              <Form method="post" action="/auth/signout">
+              <Form method="post" action="/lock">
                 <button
                   type="submit"
                   className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign out
+                  Lock
                 </button>
               </Form>
             </div>
@@ -128,23 +127,23 @@ export default function Dashboard() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {currentlyReading.map((userBook) => (
+                {currentlyReading.map((bookEntry) => (
                   <Link
-                    key={userBook.id}
-                    to={`/books/${userBook.bookId}`}
+                    key={bookEntry.id}
+                    to={`/books/${bookEntry.bookId}`}
                     className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow"
                   >
-                    {userBook.book?.coverImageUrl && (
+                    {bookEntry.book?.coverImageUrl && (
                       <img
-                        src={userBook.book.coverImageUrl}
-                        alt={userBook.book.title}
+                        src={bookEntry.book.coverImageUrl}
+                        alt={bookEntry.book.title}
                         className="w-24 h-36 object-cover mx-auto mb-3"
                       />
                     )}
                     <h4 className="font-medium text-gray-900 line-clamp-2">
-                      {userBook.book?.title}
+                      {bookEntry.book?.title}
                     </h4>
-                    <p className="text-sm text-gray-600">{userBook.book?.author}</p>
+                    <p className="text-sm text-gray-600">{bookEntry.book?.author}</p>
                   </Link>
                 ))}
               </div>
@@ -161,33 +160,33 @@ export default function Dashboard() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {recentlyAdded.map((userBook) => (
+                {recentlyAdded.map((bookEntry) => (
                   <Link
-                    key={userBook.id}
-                    to={`/books/${userBook.bookId}`}
+                    key={bookEntry.id}
+                    to={`/books/${bookEntry.bookId}`}
                     className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow"
                   >
-                    {userBook.book?.coverImageUrl && (
+                    {bookEntry.book?.coverImageUrl && (
                       <img
-                        src={userBook.book.coverImageUrl}
-                        alt={userBook.book.title}
+                        src={bookEntry.book.coverImageUrl}
+                        alt={bookEntry.book.title}
                         className="w-24 h-36 object-cover mx-auto mb-3"
                       />
                     )}
                     <h4 className="font-medium text-gray-900 line-clamp-2">
-                      {userBook.book?.title}
+                      {bookEntry.book?.title}
                     </h4>
-                    <p className="text-sm text-gray-600">{userBook.book?.author}</p>
+                    <p className="text-sm text-gray-600">{bookEntry.book?.author}</p>
                     <span className={`inline-block mt-2 px-2 py-1 text-xs rounded-full ${
-                      userBook.status === 'reading' 
+                      bookEntry.status === 'reading' 
                         ? 'bg-green-100 text-green-800'
-                        : userBook.status === 'read'
+                        : bookEntry.status === 'read'
                         ? 'bg-purple-100 text-purple-800'
                         : 'bg-blue-100 text-blue-800'
                     }`}>
-                      {userBook.status === 'want_to_read' 
+                      {bookEntry.status === 'want_to_read' 
                         ? 'Want to Read' 
-                        : userBook.status === 'reading'
+                        : bookEntry.status === 'reading'
                         ? 'Reading'
                         : 'Read'}
                     </span>

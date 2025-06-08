@@ -10,3 +10,7 @@
 .mf
 .wrangler
 .dev.vars*
+# Test coverage
+coverage/
+test-results/
+playwright-report/

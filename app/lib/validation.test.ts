@@ -1,111 +1,32 @@
 import { describe, it, expect } from 'vitest';
 import {
-  signUpSchema,
-  signInSchema,
+  unlockSchema,
   bookSearchSchema,
   addBookSchema,
   updateBookSchema,
 } from './validation';
 
 describe('validation schemas', () => {
-  describe('signUpSchema', () => {
-    it('should validate correct sign up data', () => {
+  describe('unlockSchema', () => {
+    it('should validate correct unlock data', () => {
       const validData = {
-        email: 'test@example.com',
-        username: 'testuser',
         password: 'password123',
       };
       
-      const result = signUpSchema.safeParse(validData);
+      const result = unlockSchema.safeParse(validData);
       expect(result.success).toBe(true);
-    });
-
-    it('should reject invalid email', () => {
-      const invalidData = {
-        email: 'invalid-email',
-        username: 'testuser',
-        password: 'password123',
-      };
-      
-      const result = signUpSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(['email']);
-      }
-    });
-
-    it('should reject short username', () => {
-      const invalidData = {
-        email: 'test@example.com',
-        username: 'ab',
-        password: 'password123',
-      };
-      
-      const result = signUpSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(['username']);
-      }
-    });
-
-    it('should reject username with special characters', () => {
-      const invalidData = {
-        email: 'test@example.com',
-        username: 'test@user',
-        password: 'password123',
-      };
-      
-      const result = signUpSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(['username']);
-      }
-    });
-
-    it('should reject short password', () => {
-      const invalidData = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: '1234567',
-      };
-      
-      const result = signUpSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(['password']);
-      }
-    });
-  });
-
-  describe('signInSchema', () => {
-    it('should validate correct sign in data', () => {
-      const validData = {
-        username: 'testuser',
-        password: 'password123',
-      };
-      
-      const result = signInSchema.safeParse(validData);
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject empty username', () => {
-      const invalidData = {
-        username: '',
-        password: 'password123',
-      };
-      
-      const result = signInSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
     });
 
     it('should reject empty password', () => {
       const invalidData = {
-        username: 'testuser',
         password: '',
       };
       
-      const result = signInSchema.safeParse(invalidData);
+      const result = unlockSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['password']);
+      }
     });
   });
 

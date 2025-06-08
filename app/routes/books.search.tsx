@@ -1,19 +1,19 @@
 import { Form, Link, useSearchParams, useLoaderData, useFetcher } from 'react-router';
 import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
 import { json } from 'react-router';
-import { requireAuth } from '~/services/auth';
-import { BookService } from '~/services/books';
+import { requireAuth } from '~/services/auth-simple';
+import { BookService } from '~/services/books-simple';
 import { bookSearchSchema, addBookSchema } from '~/lib/validation';
 import type { Book } from '~/types';
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const url = new URL(request.url);
   const query = url.searchParams.get('q') || '';
   const page = parseInt(url.searchParams.get('page') || '1');
   
   if (!query) {
-    return json({ user, books: [], total: 0, page: 1, totalPages: 0, query: '' });
+    return json({ books: [], total: 0, page: 1, totalPages: 0, query: '' });
   }
 
   try {
@@ -21,14 +21,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const searchResults = await bookService.searchBooks(query, page);
     
     return json({
-      user,
       ...searchResults,
       query,
     });
   } catch (error) {
     console.error('Search error:', error);
     return json({
-      user,
       books: [],
       total: 0,
       page: 1,
@@ -40,7 +38,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
@@ -48,8 +46,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const validatedData = addBookSchema.parse(data);
     const bookService = new BookService(context);
     
-    await bookService.addBookToUser(
-      user.id,
+    await bookService.addBook(
       validatedData.bookId,
       validatedData.status
     );
@@ -109,12 +106,12 @@ export default function BookSearch() {
               </div>
             </div>
             <div className="flex items-center">
-              <Form method="post" action="/auth/signout">
+              <Form method="post" action="/lock">
                 <button
                   type="submit"
                   className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign out
+                  Lock
                 </button>
               </Form>
             </div>

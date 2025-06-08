@@ -1,20 +1,20 @@
 import { Form, Link, useLoaderData, useFetcher } from 'react-router';
 import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
 import { json, redirect } from 'react-router';
-import { requireAuth } from '~/services/auth';
-import { BookService } from '~/services/books';
+import { requireAuth } from '~/services/auth-simple';
+import { BookService } from '~/services/books-simple';
 import { updateBookSchema } from '~/lib/validation';
-import type { Book, UserBook } from '~/types';
+import type { Book, BookEntry } from '~/types';
 import { useState } from 'react';
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const bookId = params.bookId!;
   
   const bookService = new BookService(context);
-  const [book, userBook] = await Promise.all([
+  const [book, bookEntry] = await Promise.all([
     bookService.getBookDetails(bookId),
-    bookService.getUserBook(user.id, bookId),
+    bookService.getBookEntry(bookId),
   ]);
   
   if (!book) {
@@ -22,14 +22,13 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
   }
   
   return json({
-    user,
     book,
-    userBook,
+    bookEntry,
   });
 }
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
-  const user = await requireAuth(context, request);
+  await requireAuth(context, request);
   const bookId = params.bookId!;
   const formData = await request.formData();
   const intent = formData.get('intent');
@@ -37,7 +36,7 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
   const bookService = new BookService(context);
   
   if (intent === 'delete') {
-    await bookService.removeBookFromUser(user.id, bookId);
+    await bookService.removeBook(bookId);
     return redirect('/books');
   }
   
@@ -51,14 +50,14 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
     }
     
     const validatedData = updateBookSchema.parse(data);
-    await bookService.updateUserBook(user.id, bookId, validatedData);
+    await bookService.updateBookEntry(bookId, validatedData);
     
     return json({ success: true });
   }
   
   if (intent === 'add') {
     const status = formData.get('status') as 'want_to_read' | 'reading' | 'read';
-    await bookService.addBookToUser(user.id, bookId, status);
+    await bookService.addBook(bookId, status);
     return json({ success: true });
   }
   
@@ -66,7 +65,7 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
 }
 
 export default function BookDetail() {
-  const { book, userBook } = useLoaderData<typeof loader>();
+  const { book, bookEntry } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [isEditing, setIsEditing] = useState(false);
   
@@ -112,12 +111,12 @@ export default function BookDetail() {
               </div>
             </div>
             <div className="flex items-center">
-              <Form method="post" action="/auth/signout">
+              <Form method="post" action="/lock">
                 <button
                   type="submit"
                   className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign out
+                  Lock
                 </button>
               </Form>
             </div>
@@ -160,7 +159,7 @@ export default function BookDetail() {
                   </div>
                 )}
                 
-                {!userBook ? (
+                {!bookEntry ? (
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold mb-4">Add to your library</h3>
                     <fetcher.Form method="post" className="flex gap-2">
@@ -214,7 +213,7 @@ export default function BookDetail() {
                             </label>
                             <select
                               name="status"
-                              defaultValue={userBook.status}
+                              defaultValue={bookEntry.status}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             >
                               <option value="want_to_read">Want to Read</option>
@@ -229,7 +228,7 @@ export default function BookDetail() {
                             </label>
                             <select
                               name="rating"
-                              defaultValue={userBook.rating || ''}
+                              defaultValue={bookEntry.rating || ''}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             >
                               <option value="">No rating</option>
@@ -247,14 +246,14 @@ export default function BookDetail() {
                             </label>
                             <textarea
                               name="review"
-                              defaultValue={userBook.review || ''}
+                              defaultValue={bookEntry.review || ''}
                               rows={4}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                               placeholder="Write your review..."
                             />
                           </div>
                           
-                          {userBook.status === 'reading' && (
+                          {bookEntry.status === 'reading' && (
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Start Date
@@ -262,13 +261,13 @@ export default function BookDetail() {
                               <input
                                 type="date"
                                 name="startDate"
-                                defaultValue={userBook.startDate || ''}
+                                defaultValue={bookEntry.startDate || ''}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                               />
                             </div>
                           )}
                           
-                          {userBook.status === 'read' && (
+                          {bookEntry.status === 'read' && (
                             <>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -277,7 +276,7 @@ export default function BookDetail() {
                                 <input
                                   type="date"
                                   name="startDate"
-                                  defaultValue={userBook.startDate || ''}
+                                  defaultValue={bookEntry.startDate || ''}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                               </div>
@@ -288,7 +287,7 @@ export default function BookDetail() {
                                 <input
                                   type="date"
                                   name="finishDate"
-                                  defaultValue={userBook.finishDate || ''}
+                                  defaultValue={bookEntry.finishDate || ''}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                               </div>
@@ -315,16 +314,16 @@ export default function BookDetail() {
                         <div className="space-y-3">
                           <p>
                             <span className="font-medium">Status:</span>{' '}
-                            {getStatusLabel(userBook.status)}
+                            {getStatusLabel(bookEntry.status)}
                           </p>
-                          {userBook.rating && (
+                          {bookEntry.rating && (
                             <p>
                               <span className="font-medium">Rating:</span>{' '}
                               {[...Array(5)].map((_, i) => (
                                 <span
                                   key={i}
                                   className={
-                                    i < userBook.rating!
+                                    i < bookEntry.rating!
                                       ? 'text-yellow-400'
                                       : 'text-gray-300'
                                   }
@@ -334,22 +333,22 @@ export default function BookDetail() {
                               ))}
                             </p>
                           )}
-                          {userBook.review && (
+                          {bookEntry.review && (
                             <div>
                               <p className="font-medium">Review:</p>
-                              <p className="text-gray-700 mt-1">{userBook.review}</p>
+                              <p className="text-gray-700 mt-1">{bookEntry.review}</p>
                             </div>
                           )}
-                          {userBook.startDate && (
+                          {bookEntry.startDate && (
                             <p>
                               <span className="font-medium">Started:</span>{' '}
-                              {new Date(userBook.startDate).toLocaleDateString()}
+                              {new Date(bookEntry.startDate).toLocaleDateString()}
                             </p>
                           )}
-                          {userBook.finishDate && (
+                          {bookEntry.finishDate && (
                             <p>
                               <span className="font-medium">Finished:</span>{' '}
-                              {new Date(userBook.finishDate).toLocaleDateString()}
+                              {new Date(bookEntry.finishDate).toLocaleDateString()}
                             </p>
                           )}
                         </div>

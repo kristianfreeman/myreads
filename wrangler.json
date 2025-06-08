@@ -15,7 +15,7 @@
 	},
 	"upload_source_maps": true,
 	"vars": {
-		"JWT_SECRET": "development-secret-change-in-production",
+		"APP_PASSWORD": "$2a$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrXJiYxw0DW0HJMgCZOy",
 		"SESSION_DURATION": "86400000"
 	},
 	/**

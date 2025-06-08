@@ -1,18 +1,3 @@
-export interface User {
-  id: number;
-  email: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Session {
-  id: string;
-  userId: number;
-  expiresAt: string;
-  createdAt: string;
-}
-
 export interface Book {
   id: string;
   title: string;
@@ -27,9 +12,8 @@ export interface Book {
   updatedAt: string;
 }
 
-export interface UserBook {
+export interface BookEntry {
   id: number;
-  userId: number;
   bookId: string;
   status: 'want_to_read' | 'reading' | 'read';
   rating?: number;
@@ -47,8 +31,8 @@ export interface Tag {
   createdAt: string;
 }
 
-export interface UserBookTag {
-  userBookId: number;
+export interface BookTag {
+  bookEntryId: number;
   tagId: number;
   createdAt: string;
   tag?: Tag;
