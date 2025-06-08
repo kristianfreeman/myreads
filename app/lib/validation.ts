@@ -17,7 +17,13 @@ export const addBookSchema = z.object({
 
 export const updateBookSchema = z.object({
   status: z.enum(['want_to_read', 'reading', 'read']).optional(),
-  rating: z.number().int().min(1).max(5).optional(),
+  rating: z.preprocess(
+    (val) => {
+      if (val === '' || val === undefined || val === null) return undefined;
+      return Number(val);
+    },
+    z.number().int().min(1).max(5).optional()
+  ),
   review: z.string().max(5000).optional(),
   startDate: z.string().optional(),
   finishDate: z.string().optional(),
