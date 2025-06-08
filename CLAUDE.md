@@ -67,3 +67,10 @@ Always run `npm run cf-typegen` after modifying `wrangler.json` to update Cloudf
 - File-based routing in `app/routes/` directory
 - Route configuration managed in `app/routes.ts`
 - Type-safe route parameters via generated `+types` files
+
+## Development Workflow
+
+- Every time you make a change, it should have associated (passing) unit tests. After completing a task, run tests, confirm they pass, then make a git commit.
+
+## Best Practices
+- Any time you use something from an API, you should attempt to look up and make sure it works / the syntax is correct using web search

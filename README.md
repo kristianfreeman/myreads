@@ -1,109 +1,147 @@
-# Welcome to React Router + Cloudflare Workers!
+# MyReads - Open Source Goodreads Alternative
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/react-router-starter-template)
-
-![React Router Starter Template Preview](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/bfdc2f85-e5c9-4c92-128b-3a6711249800/public)
-
-<!-- dash-content-start -->
-
-A modern, production-ready template for building full-stack React applications using [React Router](https://reactrouter.com/) and the [Cloudflare Vite plugin](https://developers.cloudflare.com/workers/vite-plugin/).
+A full-featured book tracking application built with React Router 7, Cloudflare Workers, and D1 database. Track your reading journey, discover new books, and share reviews.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- 📚 **Book Management**: Track books across three lists - Want to Read, Currently Reading, and Read
+- 🔍 **Book Search**: Search millions of books using the Open Library API
+- ⭐ **Ratings & Reviews**: Rate books and write detailed reviews
+- 📊 **Reading Statistics**: View your reading progress and statistics on a personalized dashboard
+- 🔐 **User Authentication**: Secure authentication system with session management
+- 🌐 **Edge Deployment**: Deployed globally on Cloudflare Workers for low latency
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-<!-- dash-content-end -->
+## Tech Stack
+
+- **Frontend**: React 19, React Router 7, TypeScript, Tailwind CSS
+- **Backend**: Cloudflare Workers (Edge Runtime)
+- **Database**: Cloudflare D1 (SQLite)
+- **Authentication**: JWT-based sessions with bcrypt password hashing
+- **Book Data**: Open Library API
+- **Testing**: Vitest (Unit), Playwright (E2E)
 
 ## Getting Started
 
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
+### Prerequisites
 
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/react-router-starter-template
-```
-
-A live public deployment of this template is available at [https://react-router-starter-template.templates.workers.dev](https://react-router-starter-template.templates.workers.dev)
+- Node.js 18+ and npm
+- A Cloudflare account (free tier works)
+- Wrangler CLI (installed automatically with dependencies)
 
 ### Installation
 
-Install the dependencies:
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/myreads.git
+cd myreads
+```
 
+2. Install dependencies:
 ```bash
 npm install
 ```
 
+3. Create a D1 database:
+```bash
+npx wrangler d1 create myreads-db
+```
+
+4. Update `wrangler.json` with your database ID from the output above.
+
+5. Run database migrations:
+```bash
+npx wrangler d1 execute myreads-db --file=./db/migrations/0001_initial.sql
+```
+
+6. Generate TypeScript types:
+```bash
+npm run cf-typegen
+```
+
 ### Development
 
-Start the development server with HMR:
-
+Start the development server:
 ```bash
 npm run dev
 ```
 
 Your application will be available at `http://localhost:5173`.
 
-## Typegen
+### Testing
 
-Generate types for your Cloudflare bindings in `wrangler.json`:
-
-```sh
-npm run typegen
+Run unit tests:
+```bash
+npm test
 ```
 
-## Building for Production
+Run E2E tests:
+```bash
+npm run test:e2e
+```
+
+View test coverage:
+```bash
+npm run test:coverage
+```
+
+## Building and Deployment
+
+### Production Build
 
 Create a production build:
-
 ```bash
 npm run build
 ```
 
-## Previewing the Production Build
+### Deploy to Cloudflare Workers
 
-Preview the production build locally:
-
+1. First, run the database migration on your remote database:
 ```bash
-npm run preview
+npx wrangler d1 execute myreads-db --file=./db/migrations/0001_initial.sql --remote
 ```
 
-## Deployment
-
-If you don't have a Cloudflare account, [create one here](https://dash.cloudflare.com/sign-up)! Go to your [Workers dashboard](https://dash.cloudflare.com/?to=%2F%3Aaccount%2Fworkers-and-pages) to see your [free custom Cloudflare Workers subdomain](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) on `*.workers.dev`.
-
-Once that's done, you can build your app:
-
-```sh
-npm run build
-```
-
-And deploy it:
-
-```sh
+2. Deploy to Cloudflare Workers:
+```bash
 npm run deploy
 ```
 
-To deploy a preview URL:
-
-```sh
-npx wrangler versions upload
+3. Set production secrets:
+```bash
+npx wrangler secret put JWT_SECRET
+# Enter a secure random string when prompted
 ```
 
-You can then promote a version to production after verification or roll it out progressively.
+## Environment Variables
 
-```sh
-npx wrangler versions deploy
-```
+The following environment variables are configured in `wrangler.json`:
 
-## Styling
+- `JWT_SECRET`: Secret key for JWT token signing (use `wrangler secret` in production)
+- `SESSION_DURATION`: Session duration in milliseconds (default: 24 hours)
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+## Database Schema
+
+The application uses the following main tables:
+
+- `users`: User accounts with authentication
+- `books`: Cached book information from Open Library
+- `user_books`: User's book entries with status, ratings, and reviews
+- `tags`: Book tags
+- `user_book_tags`: Many-to-many relationship for book tags
+- `sessions`: User session management
+
+## API Integration
+
+MyReads uses the [Open Library API](https://openlibrary.org/developers/api) for book data. No API key is required, but please be respectful of their rate limits.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the MIT License.
 
 ---
 
-Built with ❤️ using React Router.
+Built with ❤️ using React Router and Cloudflare Workers.
