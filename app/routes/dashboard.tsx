@@ -1,6 +1,5 @@
 import { Form, Link, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
-import { json } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 
@@ -33,7 +32,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .filter(b => b.status === 'reading')
     .slice(0, 4);
   
-  return json({ stats, recentlyAdded, currentlyReading });
+  return { stats, recentlyAdded, currentlyReading };
 }
 
 export default function Dashboard() {
@@ -85,7 +84,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Reading Dashboard</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">My Reading Dashboard</h2>
           
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">

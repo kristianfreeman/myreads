@@ -15,7 +15,7 @@
 	},
 	"upload_source_maps": true,
 	"vars": {
-		"APP_PASSWORD": "$2a$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrXJiYxw0DW0HJMgCZOy",
+		"APP_PASSWORD": "$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q",
 		"SESSION_DURATION": "86400000"
 	},
 	/**

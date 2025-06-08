@@ -1,6 +1,5 @@
 import { Form, Link, useSearchParams, useLoaderData, useFetcher } from 'react-router';
 import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
-import { json } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 import { bookSearchSchema, addBookSchema } from '~/lib/validation';
@@ -13,27 +12,27 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const page = parseInt(url.searchParams.get('page') || '1');
   
   if (!query) {
-    return json({ books: [], total: 0, page: 1, totalPages: 0, query: '' });
+    return { books: [], total: 0, page: 1, totalPages: 0, query: '' };
   }
 
   try {
     const bookService = new BookService(context);
     const searchResults = await bookService.searchBooks(query, page);
     
-    return json({
+    return {
       ...searchResults,
       query,
-    });
+    };
   } catch (error) {
     console.error('Search error:', error);
-    return json({
+    return {
       books: [],
       total: 0,
       page: 1,
       totalPages: 0,
       query,
       error: 'Failed to search books',
-    });
+    };
   }
 }
 
@@ -51,12 +50,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
       validatedData.status
     );
     
-    return json({ success: true });
+    return { success: true };
   } catch (error) {
     console.error('Add book error:', error);
-    return json(
-      { error: error instanceof Error ? error.message : 'Failed to add book' },
-      { status: 400 }
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Failed to add book' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

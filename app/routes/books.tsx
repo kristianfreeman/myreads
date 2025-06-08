@@ -1,6 +1,5 @@
 import { Form, Link, useSearchParams, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
-import { json } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 import type { BookEntry } from '~/types';
@@ -21,11 +20,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     wantToRead: allEntries.filter(b => b.status === 'want_to_read').length,
   };
   
-  return json({
+  return {
     bookEntries,
     stats,
     currentStatus: status,
-  });
+  };
 }
 
 export default function MyBooks() {

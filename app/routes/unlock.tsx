@@ -1,6 +1,6 @@
-import { Form } from 'react-router';
+import { Form, useActionData } from 'react-router';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
-import { json, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { SimpleAuthService, isAuthenticated } from '~/services/auth-simple';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isAuthenticated(request)) {
     return redirect('/dashboard');
   }
-  return json({});
+  return null;
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -16,33 +16,40 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const password = formData.get('password') as string;
   
   if (!password) {
-    return json({ error: 'Password is required' }, { status: 400 });
+    return { error: 'Password is required' };
   }
 
-  const authService = new SimpleAuthService(context);
-  const isValid = await authService.verifyPassword(password);
-  
-  if (!isValid) {
-    return json({ error: 'Invalid password' }, { status: 401 });
+  try {
+    const authService = new SimpleAuthService(context);
+    const isValid = await authService.verifyPassword(password);
+    
+    if (!isValid) {
+      return { error: 'Invalid password' };
+    }
+    
+    const authCookie = authService.createAuthCookie();
+    
+    return redirect('/dashboard', {
+      headers: {
+        'Set-Cookie': authCookie,
+      },
+    });
+  } catch (error) {
+    console.error('Auth error:', error);
+    return { error: 'Authentication failed' };
   }
-  
-  const authCookie = authService.createAuthCookie();
-  
-  return redirect('/dashboard', {
-    headers: {
-      'Set-Cookie': authCookie,
-    },
-  });
 }
 
 export default function Unlock() {
+  const actionData = useActionData<typeof action>();
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h1 className="text-center text-3xl font-bold text-gray-900">MyReads</h1>
           <h2 className="mt-6 text-center text-xl text-gray-600">
-            Enter password to access your library
+            Enter Password
           </h2>
         </div>
         <Form method="post" className="mt-8 space-y-6">
@@ -56,10 +63,16 @@ export default function Unlock() {
               type="password"
               required
               className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Password"
+              placeholder="Enter password"
               autoFocus
             />
           </div>
+
+          {actionData?.error && (
+            <div className="text-red-600 text-sm text-center">
+              {actionData.error}
+            </div>
+          )}
 
           <div>
             <button

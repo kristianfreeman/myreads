@@ -1,22 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Book Management', () => {
-  let testUser: { email: string; username: string; password: string };
-
   test.beforeEach(async ({ page }) => {
-    // Create and sign in a test user
-    const timestamp = Date.now();
-    testUser = {
-      email: `test${timestamp}@example.com`,
-      username: `testuser${timestamp}`,
-      password: 'testpassword123',
-    };
-
-    await page.goto('/auth/signup');
-    await page.getByPlaceholder('Email address').fill(testUser.email);
-    await page.getByPlaceholder('Username').fill(testUser.username);
-    await page.getByPlaceholder('Password').fill(testUser.password);
-    await page.getByRole('button', { name: 'Sign up' }).click();
+    // Unlock the application
+    await page.goto('/unlock');
+    await page.getByPlaceholder('Enter password').fill('password');
+    await page.getByRole('button', { name: 'Unlock' }).click();
     
     await expect(page).toHaveURL('/dashboard');
   });
@@ -24,7 +13,7 @@ test.describe('Book Management', () => {
   test('should search for books', async ({ page }) => {
     await page.goto('/books/search');
     
-    await expect(page.getByText('Search Books')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Search Books' })).toBeVisible();
     
     // Search for a popular book
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Harry Potter');
@@ -128,7 +117,7 @@ test.describe('Book Management', () => {
     await page.goto('/books');
     
     // Filter by "Currently Reading"
-    await page.getByRole('link', { name: 'Currently Reading' }).click();
+    await page.locator('a[href="/books?status=reading"]').first().click();
     await expect(page).toHaveURL('/books?status=reading');
     
     // Should only see JavaScript book
@@ -136,7 +125,7 @@ test.describe('Book Management', () => {
     await expect(page.getByText('Python')).not.toBeVisible();
     
     // Filter by "Want to Read"
-    await page.getByRole('link', { name: 'Want to Read' }).click();
+    await page.locator('a[href="/books?status=want_to_read"]').first().click();
     await expect(page).toHaveURL('/books?status=want_to_read');
     
     // Should only see Python book

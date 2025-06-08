@@ -1,5 +1,5 @@
 import type { AppLoadContext } from 'react-router';
-import { json } from 'react-router';
+import { redirect } from 'react-router';
 import { verifyPassword } from '~/lib/crypto';
 
 export class SimpleAuthService {
@@ -34,7 +34,7 @@ export async function requireAuth(context: AppLoadContext, request: Request): Pr
   const isAuthenticated = cookieHeader?.includes('auth=true');
 
   if (!isAuthenticated) {
-    throw json({ error: 'Unauthorized' }, { status: 401 });
+    throw redirect('/unlock');
   }
 }
 

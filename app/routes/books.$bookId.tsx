@@ -1,6 +1,6 @@
 import { Form, Link, useLoaderData, useFetcher } from 'react-router';
 import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
-import { json, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 import { updateBookSchema } from '~/lib/validation';
@@ -21,10 +21,10 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     throw new Response('Book not found', { status: 404 });
   }
   
-  return json({
+  return {
     book,
     bookEntry,
-  });
+  };
 }
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
@@ -52,16 +52,19 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
     const validatedData = updateBookSchema.parse(data);
     await bookService.updateBookEntry(bookId, validatedData);
     
-    return json({ success: true });
+    return { success: true };
   }
   
   if (intent === 'add') {
     const status = formData.get('status') as 'want_to_read' | 'reading' | 'read';
     await bookService.addBook(bookId, status);
-    return json({ success: true });
+    return { success: true };
   }
   
-  return json({ error: 'Invalid action' }, { status: 400 });
+  return new Response(JSON.stringify({ error: 'Invalid action' }), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export default function BookDetail() {
