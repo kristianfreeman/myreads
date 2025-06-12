@@ -20,7 +20,8 @@ test.describe('Book Management', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     
     // Should display search results
-    await expect(page.getByText('Harry Potter')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Harry Potter/ }).first()).toBeVisible();
   });
 
   test('should add a book to reading list', async ({ page }) => {
@@ -31,15 +32,15 @@ test.describe('Book Management', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     
     // Wait for results and add first book to "Want to Read"
-    await page.waitForSelector('text=Lord of the Rings', { timeout: 10000 });
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Want to Read' }).first().click();
     
     // Navigate to My Books
     await page.goto('/books');
     
     // Should see the book in the library
-    await expect(page.getByText('Lord of the Rings')).toBeVisible();
-    await expect(page.getByText('Want to Read')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Lord of the Rings/ }).first()).toBeVisible();
+    await expect(page.locator('text=Want to Read').first()).toBeVisible();
   });
 
   test('should view book details', async ({ page }) => {
@@ -48,12 +49,12 @@ test.describe('Book Management', () => {
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('1984');
     await page.getByRole('button', { name: 'Search' }).click();
     
-    await page.waitForSelector('text=1984', { timeout: 10000 });
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Currently Reading' }).first().click();
     
     // Go to My Books and click on the book
     await page.goto('/books');
-    await page.getByText('1984').first().click();
+    await page.getByRole('heading', { name: /1984/ }).first().click();
     
     // Should be on book detail page
     await expect(page.url()).toContain('/books/');
@@ -68,12 +69,12 @@ test.describe('Book Management', () => {
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('The Great Gatsby');
     await page.getByRole('button', { name: 'Search' }).click();
     
-    await page.waitForSelector('text=The Great Gatsby', { timeout: 10000 });
-    await page.getByRole('button', { name: 'Reading' }).first().click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Currently Reading' }).first().click();
     
     // Go to book details
     await page.goto('/books');
-    await page.getByText('The Great Gatsby').first().click();
+    await page.getByRole('heading', { name: /The Great Gatsby/ }).first().click();
     
     // Edit the book
     await page.getByRole('button', { name: 'Edit' }).click();
@@ -103,15 +104,15 @@ test.describe('Book Management', () => {
     // Add first book as "Want to Read"
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Python');
     await page.getByRole('button', { name: 'Search' }).click();
-    await page.waitForSelector('button:has-text("Want to Read")', { timeout: 10000 });
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Want to Read' }).first().click();
     
     // Add second book as "Reading"
     await page.getByPlaceholder('Search by title, author, or ISBN...').clear();
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('JavaScript');
     await page.getByRole('button', { name: 'Search' }).click();
-    await page.waitForSelector('button:has-text("Reading")', { timeout: 10000 });
-    await page.getByRole('button', { name: 'Reading' }).first().click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Currently Reading' }).first().click();
     
     // Go to My Books
     await page.goto('/books');
@@ -121,16 +122,16 @@ test.describe('Book Management', () => {
     await expect(page).toHaveURL('/books?status=reading');
     
     // Should only see JavaScript book
-    await expect(page.getByText('JavaScript')).toBeVisible();
-    await expect(page.getByText('Python')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /JavaScript/ }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Python/ })).not.toBeVisible();
     
     // Filter by "Want to Read"
     await page.locator('a[href="/books?status=want_to_read"]').first().click();
     await expect(page).toHaveURL('/books?status=want_to_read');
     
     // Should only see Python book
-    await expect(page.getByText('Python')).toBeVisible();
-    await expect(page.getByText('JavaScript')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Python/ }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /JavaScript/ })).not.toBeVisible();
   });
 
   test('should remove book from library', async ({ page }) => {
@@ -139,12 +140,12 @@ test.describe('Book Management', () => {
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Test Book');
     await page.getByRole('button', { name: 'Search' }).click();
     
-    await page.waitForSelector('button:has-text("Want to Read")', { timeout: 10000 });
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Want to Read' }).first().click();
     
     // Go to book details
     await page.goto('/books');
-    await page.getByText('Test Book').first().click();
+    await page.getByRole('heading', { name: /Test Book/ }).first().click();
     
     // Remove from library
     page.on('dialog', dialog => dialog.accept());
@@ -154,6 +155,6 @@ test.describe('Book Management', () => {
     await expect(page).toHaveURL('/books');
     
     // Book should no longer be visible
-    await expect(page.getByText('Test Book')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Test Book/ })).not.toBeVisible();
   });
 });
