@@ -71,11 +71,11 @@ The application uses a password for simple authentication. This password must be
 #### Production
 Generate a bcrypt hash and set it as a secret in one command:
 ```bash
-node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD
+node scripts/hash-password.mjs | npx wrangler secret put APP_PASSWORD
 ```
 
 Or manually:
-1. Generate hash: `node scripts/hash-password.js`
+1. Generate hash: `node scripts/hash-password.mjs`
 2. Set secret: `npx wrangler secret put APP_PASSWORD`
 3. Paste the bcrypt hash when prompted
 

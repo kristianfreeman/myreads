@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const bcrypt = require('bcrypt');
-const readline = require('readline');
+import bcrypt from 'bcrypt';
+import readline from 'readline';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -20,14 +20,14 @@ function promptPassword(prompt) {
 async function hashPassword() {
   // Check if we're being piped to
   const isPiped = !process.stdout.isTTY;
-  
+
   if (!isPiped) {
     console.log('This script will generate a bcrypt hash for your password.');
     console.log('You can pipe directly to wrangler: node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD\n');
   }
 
   const password = await promptPassword(isPiped ? '' : 'Enter password to hash: ');
-  
+
   if (!password) {
     console.error('Error: Password cannot be empty');
     process.exit(1);
@@ -35,7 +35,7 @@ async function hashPassword() {
 
   try {
     const hash = await bcrypt.hash(password, 10);
-    
+
     if (isPiped) {
       // When piped, output only the hash
       console.log(hash);

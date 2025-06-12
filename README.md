@@ -48,7 +48,7 @@ A single-user book tracking application built with React Router 7, Cloudflare Wo
    git clone https://github.com/kristianfreeman/myreads
    cd myreads
    npm install
-   node scripts/hash-password.js
+   node scripts/hash-password.mjs
    ```
 
 5. Save and deploy your changes
@@ -151,10 +151,10 @@ npm run deploy
 2. Set a secure password:
 ```bash
 # Generate and set password in one command:
-node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD
+node scripts/hash-password.mjs | npx wrangler secret put APP_PASSWORD
 
 # Or manually:
-node scripts/hash-password.js
+node scripts/hash-password.mjs
 # Copy the hash, then:
 npx wrangler secret put APP_PASSWORD
 # Paste the hash when prompted
