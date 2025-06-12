@@ -1,7 +1,5 @@
 # MyReads - Personal Book Tracking App
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/kristianfreeman/myreads)
-
 A single-user book tracking application built with React Router 7, Cloudflare Workers, and D1 database. Track your reading journey, discover new books, and write reviews for your personal library.
 
 ## Features
@@ -23,39 +21,27 @@ A single-user book tracking application built with React Router 7, Cloudflare Wo
 - **Book Data**: Open Library API
 - **Testing**: Vitest (Unit), Playwright (E2E)
 
-## Quick Deploy
+## Getting Started
 
-### Deploy with Cloudflare Deploy Button
+### Why Fork First?
 
-1. Click the "Deploy to Cloudflare Workers" button above
-2. Authorize Cloudflare to access your GitHub account
-3. Choose a name for your repository and Worker
-4. Click "Deploy" to create the Worker
+We recommend forking this repository before deploying to Cloudflare Workers. This approach:
+- Preserves the git history and connection to the upstream repository
+- Allows you to pull updates and improvements from the main project
+- Enables you to contribute back with pull requests
+- Maintains proper attribution and licensing
 
-⚠️ **Important**: After deployment, you must configure the password:
+> **Note**: We don't use Cloudflare's Deploy Button because it creates a disconnected copy with no git history, making it difficult to stay synchronized with updates.
 
-1. Go to your [Cloudflare Workers dashboard](https://dash.cloudflare.com)
-2. Select your newly created Worker
-3. Go to Settings → Variables and Secrets
-4. Add a new secret:
-   - Variable name: `APP_PASSWORD`
-   - Value: A bcrypt hash of your desired password
-   
-   To generate a bcrypt hash:
-   ```bash
-   # Option 1: Use an online bcrypt generator
-   # Option 2: Clone the repo and use the included script:
-   git clone https://github.com/kristianfreeman/myreads
-   cd myreads
-   npm install
-   node scripts/hash-password.mjs
-   ```
+### Quick Start
 
-5. Save and deploy your changes
-
-Your MyReads instance will now be accessible at `https://your-worker-name.your-subdomain.workers.dev`
-
-## Manual Setup
+1. **Fork this repository** on GitHub
+2. Clone your fork:
+```bash
+git clone https://github.com/YOUR_USERNAME/myreads.git
+cd myreads
+```
+3. Follow the setup instructions below
 
 ### Prerequisites
 

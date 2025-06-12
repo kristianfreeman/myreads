@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React Router 7 + Cloudflare Workers application for a book reading tracker called "MyReads". The project uses:
+This is a React Router 7 + Cloudflare Workers application for a book reading tracker called "MyReads". 
+
+**Note**: We don't use Cloudflare's Deploy Button because it creates a disconnected repository copy with no git history, making updates and contributions difficult. Instead, users should fork the repository first.
+
+The project uses:
 
 - **React Router 7** with file-based routing and SSR
 - **Cloudflare Workers** for edge deployment
