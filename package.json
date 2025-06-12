@@ -64,7 +64,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "dev:local": "wrangler dev --local --persist"
+    "dev:local": "npm run build && wrangler dev --local"
   },
   "type": "module"
 }
