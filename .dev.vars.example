@@ -2,5 +2,9 @@
 # Copy this to .dev.vars and adjust as needed
 
 # Bcrypt hash for the password "password"
-# To generate your own: node scripts/hash-password.js
+# To generate your own: node scripts/hash-password.mjs
 APP_PASSWORD=$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q
+
+# Optional: Google Books API key for better search results
+# Get one from https://console.cloud.google.com
+# GOOGLE_BOOKS_API_KEY=your-api-key-here

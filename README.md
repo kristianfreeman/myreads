@@ -157,8 +157,25 @@ Configured in `wrangler.json`:
 
 Must be set via Cloudflare dashboard or wrangler CLI:
 - `APP_PASSWORD`: Bcrypt hash of the application password (required)
+- `GOOGLE_BOOKS_API_KEY`: Google Books API key for better book search results (optional)
 
 **Never commit passwords or secrets to `wrangler.json`!**
+
+#### Setting up Google Books API (Optional)
+
+For better book search results, you can use the Google Books API instead of Open Library:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the "Books API" from the API Library
+4. Create credentials (API Key) for the Books API
+5. Set the API key as a secret:
+   ```bash
+   npx wrangler secret put GOOGLE_BOOKS_API_KEY
+   # Paste your API key when prompted
+   ```
+
+The app will automatically use Google Books API when the key is configured, falling back to Open Library if not set or if Google Books fails.
 
 ## Database Schema
 

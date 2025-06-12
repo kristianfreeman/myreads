@@ -70,26 +70,37 @@ Always run `npm run cf-typegen` after modifying `wrangler.json` to update Cloudf
 - Production: Use Cloudflare Workers secrets for sensitive data
 
 ### Secrets Management
-The application uses a password for simple authentication. This password must be set as a Cloudflare Workers secret:
+The application uses secrets for authentication and external APIs:
 
-#### Production
-Generate a bcrypt hash and set it as a secret in one command:
+#### Required Secrets
+- `APP_PASSWORD`: Bcrypt hash for simple authentication
+
+#### Optional Secrets
+- `GOOGLE_BOOKS_API_KEY`: Google Books API key for improved book search
+
+#### Production Setup
 ```bash
+# Set password (required)
 node scripts/hash-password.mjs | npx wrangler secret put APP_PASSWORD
-```
 
-Or manually:
-1. Generate hash: `node scripts/hash-password.mjs`
-2. Set secret: `npx wrangler secret put APP_PASSWORD`
-3. Paste the bcrypt hash when prompted
+# Set Google Books API key (optional, for better search)
+npx wrangler secret put GOOGLE_BOOKS_API_KEY
+```
 
 #### Local Development
 Create a `.dev.vars` file (ignored by git) with your local secrets:
 ```
 APP_PASSWORD=$2b$10$YourBcryptHashHere
+GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 ```
 
 A `.dev.vars.example` file is provided with the test password hash.
+
+#### Book Search APIs
+- **Default**: Open Library API (no key required, lower quality results)
+- **Optional**: Google Books API (requires API key, better quality results)
+- The app automatically uses Google Books when `GOOGLE_BOOKS_API_KEY` is set
+- Falls back to Open Library if Google Books fails or no key is provided
 
 Never commit secrets to `wrangler.json`!
 

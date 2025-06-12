@@ -24,6 +24,34 @@ interface OpenLibraryWork {
   covers?: number[];
 }
 
+interface GoogleBooksVolume {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    publisher?: string;
+    publishedDate?: string;
+    description?: string;
+    pageCount?: number;
+    categories?: string[];
+    imageLinks?: {
+      thumbnail?: string;
+      smallThumbnail?: string;
+    };
+    language?: string;
+    industryIdentifiers?: Array<{
+      type: string;
+      identifier: string;
+    }>;
+  };
+}
+
+interface GoogleBooksSearchResponse {
+  kind: string;
+  totalItems: number;
+  items?: GoogleBooksVolume[];
+}
+
 export class BookService {
   constructor(private context: AppLoadContext) {}
 
@@ -31,7 +59,74 @@ export class BookService {
     return this.context.cloudflare.env.DB;
   }
 
+  private get googleApiKey() {
+    return this.context.cloudflare.env.GOOGLE_BOOKS_API_KEY;
+  }
+
   async searchBooks(query: string, page: number = 1, limit: number = 20): Promise<{
+    books: Book[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    // Use Google Books API if key is available, otherwise fall back to Open Library
+    if (this.googleApiKey) {
+      return this.searchBooksGoogle(query, page, limit);
+    }
+    return this.searchBooksOpenLibrary(query, page, limit);
+  }
+
+  private async searchBooksGoogle(query: string, page: number = 1, limit: number = 20): Promise<{
+    books: Book[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const startIndex = (page - 1) * limit;
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${limit}&key=${this.googleApiKey}`;
+    
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('Google Books API error:', await response.text());
+      // Fall back to Open Library if Google Books fails
+      return this.searchBooksOpenLibrary(query, page, limit);
+    }
+
+    const data: GoogleBooksSearchResponse = await response.json();
+    
+    const books: Book[] = (data.items || []).map(item => {
+      const { volumeInfo } = item;
+      const isbn = volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier ||
+                   volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier;
+
+      return {
+        id: item.id,
+        title: volumeInfo.title,
+        author: volumeInfo.authors?.join(', ') || 'Unknown Author',
+        description: volumeInfo.description,
+        publishedDate: volumeInfo.publishedDate,
+        coverImageUrl: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+        language: volumeInfo.language || 'en',
+        pageCount: volumeInfo.pageCount,
+        publisher: volumeInfo.publisher,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
+
+    const total = data.totalItems || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      books,
+      total,
+      page,
+      totalPages
+    };
+  }
+
+  private async searchBooksOpenLibrary(query: string, page: number = 1, limit: number = 20): Promise<{
     books: Book[];
     total: number;
     page: number;
@@ -99,6 +194,47 @@ export class BookService {
       };
     }
 
+    // Use Google Books API if available, otherwise Open Library
+    if (this.googleApiKey) {
+      return this.getBookDetailsGoogle(bookId);
+    }
+    return this.getBookDetailsOpenLibrary(bookId);
+  }
+
+  private async getBookDetailsGoogle(bookId: string): Promise<Book | null> {
+    const url = `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${this.googleApiKey}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: GoogleBooksVolume = await response.json();
+    const { volumeInfo } = data;
+    const isbn = volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier ||
+                 volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier;
+
+    const book: Book = {
+      id: bookId,
+      title: volumeInfo.title,
+      author: volumeInfo.authors?.join(', ') || 'Unknown Author',
+      description: volumeInfo.description,
+      publishedDate: volumeInfo.publishedDate,
+      coverImageUrl: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+      language: volumeInfo.language || 'en',
+      pageCount: volumeInfo.pageCount,
+      publisher: volumeInfo.publisher,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Cache the book
+    await this.cacheBook(book);
+
+    return book;
+  }
+
+  private async getBookDetailsOpenLibrary(bookId: string): Promise<Book | null> {
     // Fetch from Open Library
     const url = `https://openlibrary.org/works/${bookId}.json`;
     const response = await fetch(url, {
@@ -156,27 +292,36 @@ export class BookService {
       updatedAt: new Date().toISOString(),
     };
 
-    // Cache in database
-    await this.db
-      .prepare(
-        `INSERT OR REPLACE INTO books 
-         (id, title, author, description, cover_image_url, page_count, published_date, publisher, language) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        book.id,
-        book.title,
-        book.author,
-        book.description || null,
-        book.coverImageUrl || null,
-        book.pageCount || null,
-        book.publishedDate || null,
-        book.publisher || null,
-        book.language
-      )
-      .run();
+    // Cache the book
+    await this.cacheBook(book);
 
     return book;
+  }
+
+  private async cacheBook(book: Book): Promise<void> {
+    try {
+      await this.db
+        .prepare(
+          `INSERT OR REPLACE INTO books 
+           (id, title, author, description, cover_image_url, page_count, published_date, publisher, language, isbn) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          book.id,
+          book.title,
+          book.author,
+          book.description || null,
+          book.coverImageUrl || null,
+          book.pageCount || null,
+          book.publishedDate || null,
+          book.publisher || null,
+          book.language || null,
+          null
+        )
+        .run();
+    } catch (error) {
+      console.error('Failed to cache book:', error);
+    }
   }
 
   async getBookEntries(status?: string): Promise<BookEntry[]> {
