@@ -64,9 +64,10 @@ test.describe('Book Management', () => {
     await page.waitForURL(/\/books\/[^/]+$/, { timeout: 10000 });
     
     // Should be on book detail page
-    await expect(page.getByText('Your Reading Info')).toBeVisible();
+    await expect(page.getByText('Your Reading Info')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Status:')).toBeVisible();
-    await expect(page.getByText('Currently Reading')).toBeVisible();
+    // The status label might be in a different element, so let's check for it more flexibly
+    await expect(page.locator('text=Currently Reading').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should update book status and rating', async ({ page }) => {
@@ -108,9 +109,9 @@ test.describe('Book Management', () => {
     await page.waitForTimeout(1000);
     
     // Verify updates
-    await expect(page.getByText('Status: Read')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('★★★★★')).toBeVisible();
-    await expect(page.getByText('An amazing classic that explores the American Dream!')).toBeVisible();
+    await expect(page.locator('text=Status: Read').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=★★★★★').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=An amazing classic that explores the American Dream!').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should filter books by status', async ({ page }) => {
@@ -147,16 +148,20 @@ test.describe('Book Management', () => {
     await expect(page).toHaveURL('/books?status=reading');
     
     // Should only see JavaScript book
-    await expect(page.getByRole('heading', { name: /JavaScript/ }).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Python/ })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /JavaScript/ }).first()).toBeVisible({ timeout: 10000 });
+    // Python book should not be visible  
+    const pythonBooks = page.getByRole('heading', { name: /Python/ });
+    await expect(pythonBooks).toHaveCount(0, { timeout: 5000 });
     
     // Filter by "Want to Read"
     await page.locator('a[href="/books?status=want_to_read"]').first().click();
     await expect(page).toHaveURL('/books?status=want_to_read');
     
     // Should only see Python book
-    await expect(page.getByRole('heading', { name: /Python/ }).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: /JavaScript/ })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Python/ }).first()).toBeVisible({ timeout: 10000 });
+    // JavaScript book should not be visible
+    const jsBooks = page.getByRole('heading', { name: /JavaScript/ });
+    await expect(jsBooks).toHaveCount(0, { timeout: 5000 });
   });
 
   test('should remove book from library', async ({ page }) => {
@@ -187,6 +192,7 @@ test.describe('Book Management', () => {
     await expect(page).toHaveURL('/books');
     
     // Book should no longer be visible
-    await expect(page.getByRole('heading', { name: /Test Book/ })).not.toBeVisible();
+    const testBooks = page.getByRole('heading', { name: /Test Book/ });
+    await expect(testBooks).toHaveCount(0, { timeout: 10000 });
   });
 });

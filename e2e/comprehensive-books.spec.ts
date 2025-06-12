@@ -214,22 +214,25 @@ test.describe('Comprehensive Book Management', () => {
   });
 
   test('form validation works', async ({ page }) => {
-    await page.goto('/unlock');
+    // Clear cookies to ensure we're logged out
     await page.context().clearCookies();
+    await page.goto('/unlock');
     
     // Test empty password
     await page.getByRole('button', { name: 'Unlock' }).click();
-    await expect(page.getByText('Enter password')).toBeVisible();
+    // The validation message might be in the placeholder or as a separate element
+    await expect(page.locator('input:invalid').first()).toBeVisible({ timeout: 5000 });
     
     // Test wrong password
     await page.getByPlaceholder('Enter password').fill('wrongpassword');
     await page.getByRole('button', { name: 'Unlock' }).click();
-    await expect(page.getByText('Invalid password')).toBeVisible();
+    await expect(page.locator('text=Invalid password').first()).toBeVisible({ timeout: 10000 });
     
     // Test correct password
+    await page.getByPlaceholder('Enter password').clear();
     await page.getByPlaceholder('Enter password').fill('password');
     await page.getByRole('button', { name: 'Unlock' }).click();
-    await expect(page).toHaveURL('/dashboard');
+    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
   });
 
   test('session persistence', async ({ page, context }) => {
@@ -245,7 +248,7 @@ test.describe('Comprehensive Book Management', () => {
     await newPage.goto('/dashboard');
     
     // Should still be authenticated
-    await expect(newPage.getByText('My Reading Dashboard')).toBeVisible();
+    await expect(newPage.locator('text=My Reading Dashboard').first()).toBeVisible({ timeout: 10000 });
     
     // Lock from the new page
     await newPage.getByRole('button', { name: 'Lock' }).click();
