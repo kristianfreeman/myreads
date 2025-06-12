@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "myreads",
+	"name": "books-kristianfreeman-com",
 	"main": "./workers/app.ts",
 	"compatibility_date": "2025-04-01",
 	"compatibility_flags": [
@@ -23,9 +23,9 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "myreads-db",
+			"database_name": "kristian-books-db",
 			"database_id": "4f4cd98a-18af-4d2a-80d5-4e9ab85f2b80",
-			"preview_database_id": "myreads-test-db",
+			"preview_database_id": "kristian-books-db-test",
 			"migrations_dir": "db/migrations"
 		}
 	]
