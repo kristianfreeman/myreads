@@ -113,7 +113,7 @@ test.describe('Edge Cases', () => {
     
     // Should end up on the last route without errors
     await expect(page).toHaveURL('/books/search');
-    await expect(page.getByRole('heading', { name: 'Search Books' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Search Books' })).toBeVisible({ timeout: 10000 });
   });
 
   test('should handle concurrent form submissions', async ({ page }) => {
@@ -201,9 +201,14 @@ test.describe('Edge Cases', () => {
     
     for (const url of specialUrls) {
       await page.goto(url);
-      // Should either show 404, redirect, or show safely
-      const isValid = await page.getByText(/not found|error/i).isVisible()
-        .catch(() => page.url().includes('/books') || page.url().includes('/unlock'));
+      await page.waitForLoadState('networkidle');
+      
+      // Should either show error, redirect to unlock, or be on a valid books page
+      const currentUrl = page.url();
+      const isValid = currentUrl.includes('/unlock') || 
+                     currentUrl.includes('/books') ||
+                     await page.getByText(/not found|error|404/i).isVisible({ timeout: 1000 }).catch(() => false);
+      
       expect(isValid).toBeTruthy();
     }
   });

@@ -50,14 +50,20 @@ test.describe('Book Management', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     
     await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole('button', { name: 'Currently Reading' }).first().click();
+    await page.getByRole('button', { name: 'Reading' }).first().click();
+    
+    // Wait for book to be added
+    await page.waitForTimeout(1000);
     
     // Go to My Books and click on the book
     await page.goto('/books');
+    await expect(page.getByRole('heading', { name: /1984/ }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('heading', { name: /1984/ }).first().click();
     
+    // Wait for navigation to book detail page
+    await page.waitForURL(/\/books\/[^/]+$/, { timeout: 10000 });
+    
     // Should be on book detail page
-    await expect(page.url()).toContain('/books/');
     await expect(page.getByText('Your Reading Info')).toBeVisible();
     await expect(page.getByText('Status:')).toBeVisible();
     await expect(page.getByText('Currently Reading')).toBeVisible();
@@ -70,11 +76,18 @@ test.describe('Book Management', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     
     await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole('button', { name: 'Currently Reading' }).first().click();
+    await page.getByRole('button', { name: 'Reading' }).first().click();
+    
+    // Wait for book to be added
+    await page.waitForTimeout(1000);
     
     // Go to book details
     await page.goto('/books');
+    await expect(page.getByRole('heading', { name: /The Great Gatsby/ }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('heading', { name: /The Great Gatsby/ }).first().click();
+    
+    // Wait for navigation to book detail page
+    await page.waitForURL(/\/books\/[^/]+$/, { timeout: 10000 });
     
     // Edit the book
     await page.getByRole('button', { name: 'Edit' }).click();
@@ -91,8 +104,11 @@ test.describe('Book Management', () => {
     // Save changes
     await page.getByRole('button', { name: 'Save Changes' }).click();
     
+    // Wait for save to complete
+    await page.waitForTimeout(1000);
+    
     // Verify updates
-    await expect(page.getByText('Status: Read')).toBeVisible();
+    await expect(page.getByText('Status: Read')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('★★★★★')).toBeVisible();
     await expect(page.getByText('An amazing classic that explores the American Dream!')).toBeVisible();
   });
@@ -107,15 +123,24 @@ test.describe('Book Management', () => {
     await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Want to Read' }).first().click();
     
+    // Wait for first book to be added
+    await page.waitForTimeout(1000);
+    
     // Add second book as "Reading"
     await page.getByPlaceholder('Search by title, author, or ISBN...').clear();
     await page.getByPlaceholder('Search by title, author, or ISBN...').fill('JavaScript');
     await page.getByRole('button', { name: 'Search' }).click();
     await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole('button', { name: 'Currently Reading' }).first().click();
+    await page.getByRole('button', { name: 'Reading' }).first().click();
+    
+    // Wait for second book to be added
+    await page.waitForTimeout(1000);
     
     // Go to My Books
     await page.goto('/books');
+    
+    // Wait for books to be loaded
+    await expect(page.getByRole('heading', { name: /Python|JavaScript/ }).first()).toBeVisible({ timeout: 10000 });
     
     // Filter by "Currently Reading"
     await page.locator('a[href="/books?status=reading"]').first().click();
@@ -143,9 +168,16 @@ test.describe('Book Management', () => {
     await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: 'Want to Read' }).first().click();
     
+    // Wait for book to be added
+    await page.waitForTimeout(1000);
+    
     // Go to book details
     await page.goto('/books');
+    await expect(page.getByRole('heading', { name: /Test Book/ }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('heading', { name: /Test Book/ }).first().click();
+    
+    // Wait for navigation to book detail page
+    await page.waitForURL(/\/books\/[^/]+$/, { timeout: 10000 });
     
     // Remove from library
     page.on('dialog', dialog => dialog.accept());

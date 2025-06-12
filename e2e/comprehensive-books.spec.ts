@@ -121,7 +121,7 @@ test.describe('Comprehensive Book Management', () => {
     
     const getStats = async () => {
       const stats = await page.evaluate(() => {
-        const statElements = document.querySelectorAll('.grid > .bg-white > div');
+        const statElements = document.querySelectorAll('.grid > .bg-white, .grid > .bg-gray-800');
         const statsMap: Record<string, string> = {};
         statElements.forEach(el => {
           const value = el.querySelector('.text-2xl')?.textContent || '0';
@@ -135,8 +135,15 @@ test.describe('Comprehensive Book Management', () => {
     
     const initialStats = await getStats();
     
-    // Add a book via direct navigation (using test book if exists)
-    await addTestBook(page, 'TEST001', 'reading');
+    // Add a book via search
+    await page.goto('/books/search');
+    await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Statistics Test Book');
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Reading' }).first().click();
+    
+    // Wait for book to be added
+    await page.waitForTimeout(1000);
     
     // Go back to dashboard
     await page.goto('/dashboard');
@@ -144,7 +151,7 @@ test.describe('Comprehensive Book Management', () => {
     // Check if stats updated
     const updatedStats = await getStats();
     
-    // At least one stat should have changed
+    // At least one stat should have changed or we should have stats
     const hasChanges = Object.keys(initialStats).some(
       key => initialStats[key] !== updatedStats[key]
     );
@@ -153,10 +160,31 @@ test.describe('Comprehensive Book Management', () => {
   });
 
   test('book filtering works correctly', async ({ page }) => {
-    // Add test books with different statuses
-    await addTestBook(page, 'TEST001', 'want_to_read');
-    await addTestBook(page, 'TEST002', 'reading');
-    await addTestBook(page, 'TEST003', 'read');
+    // Add books with different statuses via search
+    await page.goto('/books/search');
+    
+    // Add first book as Want to Read
+    await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Filter Test 1');
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Want to Read' }).first().click();
+    await page.waitForTimeout(1000);
+    
+    // Add second book as Reading
+    await page.getByPlaceholder('Search by title, author, or ISBN...').clear();
+    await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Filter Test 2');
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Reading' }).first().click();
+    await page.waitForTimeout(1000);
+    
+    // Add third book as Read
+    await page.getByPlaceholder('Search by title, author, or ISBN...').clear();
+    await page.getByPlaceholder('Search by title, author, or ISBN...').fill('Filter Test 3');
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(page.locator('.grid').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Read' }).first().click();
+    await page.waitForTimeout(1000);
     
     await page.goto('/books');
     
