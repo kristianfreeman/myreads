@@ -1,7 +1,14 @@
 import { Link } from 'react-router';
-import type { LoaderFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { redirect } from 'react-router';
 import { isAuthenticated } from '~/services/auth-simple';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "MyReads - Personal Book Tracking" },
+    { name: "description", content: "Track your reading journey with MyReads - a personal book tracking application" },
+  ];
+};
 
 export function loader({ request }: LoaderFunctionArgs) {
   if (isAuthenticated(request)) {

@@ -1,5 +1,5 @@
 import { Form, Link, useLoaderData, useFetcher } from 'react-router';
-import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, ActionFunctionArgs, MetaFunction } from 'react-router';
 import { redirect } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
@@ -7,6 +7,16 @@ import { updateBookSchema } from '~/lib/validation';
 import type { Book, BookEntry } from '~/types';
 import { useState } from 'react';
 import { BookCoverWithFallback } from '~/components/BookCover';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) {
+    return [{ title: "Book Not Found - MyReads" }];
+  }
+  return [
+    { title: `${data.book.title} - MyReads` },
+    { name: "description", content: `View details for ${data.book.title} by ${data.book.author}` },
+  ];
+};
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
   await requireAuth(context, request);

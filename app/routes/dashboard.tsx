@@ -1,8 +1,15 @@
 import { Form, Link, useLoaderData } from 'react-router';
-import type { LoaderFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 import { BookCoverWithFallback } from '~/components/BookCover';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Dashboard - MyReads" },
+    { name: "description", content: "Your reading dashboard and statistics" },
+  ];
+};
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireAuth(context, request);

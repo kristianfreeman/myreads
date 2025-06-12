@@ -1,10 +1,17 @@
 import { Form, Link, useSearchParams, useLoaderData, useFetcher, redirect } from 'react-router';
-import type { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, ActionFunctionArgs, MetaFunction } from 'react-router';
 import { requireAuth } from '~/services/auth-simple';
 import { BookService } from '~/services/books-simple';
 import { bookSearchSchema, addBookSchema } from '~/lib/validation';
 import type { Book } from '~/types';
 import { BookCoverWithFallback } from '~/components/BookCover';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Search Books - MyReads" },
+    { name: "description", content: "Search and add books to your reading list" },
+  ];
+};
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireAuth(context, request);
