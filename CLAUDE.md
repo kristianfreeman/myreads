@@ -63,6 +63,28 @@ Always run `npm run cf-typegen` after modifying `wrangler.json` to update Cloudf
 - Development: Define in `wrangler.json` under `vars`
 - Production: Use Cloudflare Workers secrets for sensitive data
 
+### Secrets Management
+The application uses a password for simple authentication. This password must be set as a Cloudflare Workers secret:
+
+#### Production
+Generate a bcrypt hash and set it as a secret in one command:
+```bash
+node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD
+```
+
+Or manually:
+1. Generate hash: `node scripts/hash-password.js`
+2. Set secret: `npx wrangler secret put APP_PASSWORD`
+3. Paste the bcrypt hash when prompted
+
+#### Local Development
+Create a `.dev.vars` file (ignored by git) with your local secrets:
+```
+APP_PASSWORD=$2b$10$YourBcryptHashHere
+```
+
+Never commit secrets to `wrangler.json`!
+
 ### Routing
 - File-based routing in `app/routes/` directory
 - Route configuration managed in `app/routes.ts`
