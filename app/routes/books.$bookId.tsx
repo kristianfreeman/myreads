@@ -47,7 +47,7 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
     
     // Convert tags string to array
     if (data.tags && typeof data.tags === 'string') {
-      data.tags = data.tags.split(',').map(t => t.trim()).filter(Boolean);
+      (data as any).tags = data.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
     }
     
     const validatedData = updateBookSchema.parse(data);

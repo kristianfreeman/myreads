@@ -6,7 +6,7 @@ import type { AppLoadContext } from 'react-router';
 vi.mock('~/lib/crypto', () => ({
   verifyPassword: vi.fn((password: string, hash: string) => {
     // Mock implementation - 'password' matches the hash
-    return Promise.resolve(password === 'password' && hash === '$2a$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrXJiYxw0DW0HJMgCZOy');
+    return Promise.resolve(password === 'password' && hash === '$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q');
   }),
 }));
 
@@ -14,7 +14,7 @@ vi.mock('~/lib/crypto', () => ({
 const mockContext: AppLoadContext = {
   cloudflare: {
     env: {
-      APP_PASSWORD: '$2a$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrXJiYxw0DW0HJMgCZOy', // hash for 'password'
+      APP_PASSWORD: '$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q', // hash for 'password'
       SESSION_DURATION: '86400000',
       DB: {} as any,
     },

@@ -25,6 +25,10 @@ export interface BookEntry {
   book?: Book;
 }
 
+export interface UserBook extends BookEntry {
+  userId: number;
+}
+
 export interface Tag {
   id: number;
   name: string;

@@ -1,7 +1,21 @@
 import type { AppLoadContext } from 'react-router';
-import { json } from 'react-router';
 import { hashPassword, verifyPassword, generateSessionId } from '~/lib/crypto';
-import type { User, Session } from '~/types';
+
+// Define User and Session types locally since they're not in ~/types
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Session {
+  id: string;
+  userId: string;
+  expiresAt: string;
+  createdAt: string;
+}
 
 export class AuthService {
   constructor(private context: AppLoadContext) {}
@@ -140,14 +154,14 @@ export async function requireAuth(context: AppLoadContext, request: Request): Pr
   const sessionId = cookieHeader?.match(/session=([^;]+)/)?.[1];
 
   if (!sessionId) {
-    throw json({ error: 'Unauthorized' }, { status: 401 });
+    throw Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const authService = new AuthService(context);
   const user = await authService.getUserFromSession(sessionId);
 
   if (!user) {
-    throw json({ error: 'Unauthorized' }, { status: 401 });
+    throw Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return user;

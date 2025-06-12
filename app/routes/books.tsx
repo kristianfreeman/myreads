@@ -185,7 +185,7 @@ export default function MyBooks() {
                             <span
                               key={i}
                               className={
-                                i < bookEntry.rating
+                                i < (bookEntry.rating ?? 0)
                                   ? 'text-yellow-400'
                                   : 'text-gray-300 dark:text-gray-600'
                               }
