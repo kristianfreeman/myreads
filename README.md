@@ -85,7 +85,7 @@ npx wrangler d1 create myreads-db
 
 5. Run database migrations:
 ```bash
-npx wrangler d1 execute myreads-db --file=./db/migrations/0002_single_user.sql --local
+npm run db:migrations:apply:local
 ```
 
 6. Generate TypeScript types:
@@ -143,17 +143,12 @@ npm run build
 
 ### Deploy to Cloudflare Workers
 
-1. First, run the database migration on your remote database:
-```bash
-npx wrangler d1 execute myreads-db --file=./db/migrations/0002_single_user.sql --remote
-```
-
-2. Deploy to Cloudflare Workers:
+1. Deploy to Cloudflare Workers (this will automatically run migrations):
 ```bash
 npm run deploy
 ```
 
-3. Set a secure password:
+2. Set a secure password:
 ```bash
 # Generate and set password in one command:
 node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD

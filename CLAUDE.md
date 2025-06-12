@@ -25,7 +25,9 @@ This is a React Router 7 + Cloudflare Workers application for a book reading tra
 - `npm run check` - Full validation: typecheck + build + deploy dry-run
 
 ### Deployment
-- `npm run deploy` - Deploy to Cloudflare Workers
+- `npm run deploy` - Deploy to Cloudflare Workers (includes running migrations)
+- `npm run db:migrations:apply` - Apply D1 migrations to remote database
+- `npm run db:migrations:apply:local` - Apply D1 migrations to local database
 - `npx wrangler versions upload` - Deploy preview version
 - `npx wrangler versions deploy` - Promote version to production
 
