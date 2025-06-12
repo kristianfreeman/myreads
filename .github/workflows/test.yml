@@ -49,6 +49,12 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Setup D1 Database
+      run: |
+        echo "Setting up local D1 database..."
+        npx wrangler d1 migrations apply myreads-db --local
+        npx wrangler d1 execute myreads-db --file=./db/seed-test-data.sql --local
+
     - name: Run E2E tests
       run: npm run test:e2e
 
