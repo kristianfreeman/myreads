@@ -36,6 +36,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
     });
   } catch (error) {
     console.error('Auth error:', error);
+    if (error instanceof Error && error.message.includes('not configured')) {
+      return { error: 'Application not configured. Please follow the setup instructions to set the APP_PASSWORD secret.' };
+    }
     return { error: 'Authentication failed' };
   }
 }
@@ -82,10 +85,6 @@ export default function Unlock() {
               Unlock
             </button>
           </div>
-          
-          <p className="text-center text-sm text-gray-500">
-            Default password: "password" (change in production)
-          </p>
         </Form>
       </div>
     </div>

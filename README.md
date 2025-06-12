@@ -1,5 +1,7 @@
 # MyReads - Personal Book Tracking App
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/kristianfreeman/myreads)
+
 A single-user book tracking application built with React Router 7, Cloudflare Workers, and D1 database. Track your reading journey, discover new books, and write reviews for your personal library.
 
 ## Features
@@ -21,7 +23,39 @@ A single-user book tracking application built with React Router 7, Cloudflare Wo
 - **Book Data**: Open Library API
 - **Testing**: Vitest (Unit), Playwright (E2E)
 
-## Getting Started
+## Quick Deploy
+
+### Deploy with Cloudflare Deploy Button
+
+1. Click the "Deploy to Cloudflare Workers" button above
+2. Authorize Cloudflare to access your GitHub account
+3. Choose a name for your repository and Worker
+4. Click "Deploy" to create the Worker
+
+⚠️ **Important**: After deployment, you must configure the password:
+
+1. Go to your [Cloudflare Workers dashboard](https://dash.cloudflare.com)
+2. Select your newly created Worker
+3. Go to Settings → Variables and Secrets
+4. Add a new secret:
+   - Variable name: `APP_PASSWORD`
+   - Value: A bcrypt hash of your desired password
+   
+   To generate a bcrypt hash:
+   ```bash
+   # Option 1: Use an online bcrypt generator
+   # Option 2: Clone the repo and use the included script:
+   git clone https://github.com/kristianfreeman/myreads
+   cd myreads
+   npm install
+   node scripts/hash-password.js
+   ```
+
+5. Save and deploy your changes
+
+Your MyReads instance will now be accessible at `https://your-worker-name.your-subdomain.workers.dev`
+
+## Manual Setup
 
 ### Prerequisites
 
@@ -68,7 +102,18 @@ npm run dev
 
 Your application will be available at `http://localhost:5173`.
 
-**Default password**: "password" (you should change this in production by updating the `APP_PASSWORD` hash in `wrangler.json`)
+### Setting the Password
+
+For local development, create a `.dev.vars` file:
+```bash
+# Copy the example file
+cp .dev.vars.example .dev.vars
+
+# Or create manually with test password
+echo 'APP_PASSWORD=$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q' > .dev.vars
+```
+
+This sets the password to "password". For production, use a secure password (see deployment section).
 
 ### Testing
 
@@ -108,18 +153,31 @@ npx wrangler d1 execute myreads-db --file=./db/migrations/0002_single_user.sql -
 npm run deploy
 ```
 
-3. Set a secure password hash:
+3. Set a secure password:
 ```bash
-# Generate a new password hash using bcrypt (you can use an online tool or Node.js)
-# Then update the APP_PASSWORD in wrangler.json with your new hash
+# Generate and set password in one command:
+node scripts/hash-password.js | npx wrangler secret put APP_PASSWORD
+
+# Or manually:
+node scripts/hash-password.js
+# Copy the hash, then:
+npx wrangler secret put APP_PASSWORD
+# Paste the hash when prompted
 ```
 
-## Environment Variables
+## Configuration
 
-The following environment variables are configured in `wrangler.json`:
+### Environment Variables
 
-- `APP_PASSWORD`: Bcrypt hash of the application password
+Configured in `wrangler.json`:
 - `SESSION_DURATION`: Session duration in milliseconds (default: 24 hours)
+
+### Secrets
+
+Must be set via Cloudflare dashboard or wrangler CLI:
+- `APP_PASSWORD`: Bcrypt hash of the application password (required)
+
+**Never commit passwords or secrets to `wrangler.json`!**
 
 ## Database Schema
 

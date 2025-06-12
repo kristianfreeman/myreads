@@ -1,0 +1,6 @@
+# Example .dev.vars file for local development
+# Copy this to .dev.vars and adjust as needed
+
+# Bcrypt hash for the password "password"
+# To generate your own: node scripts/hash-password.js
+APP_PASSWORD=$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q

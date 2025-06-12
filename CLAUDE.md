@@ -83,6 +83,8 @@ Create a `.dev.vars` file (ignored by git) with your local secrets:
 APP_PASSWORD=$2b$10$YourBcryptHashHere
 ```
 
+A `.dev.vars.example` file is provided with the test password hash.
+
 Never commit secrets to `wrangler.json`!
 
 ### Routing

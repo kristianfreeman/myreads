@@ -12,8 +12,8 @@ export class SimpleAuthService {
   async verifyPassword(password: string): Promise<boolean> {
     const hashedPassword = this.context.cloudflare.env.APP_PASSWORD;
     if (!hashedPassword) {
-      console.error('APP_PASSWORD not configured');
-      return false;
+      console.error('APP_PASSWORD not configured. Please set the APP_PASSWORD secret in Cloudflare Workers settings.');
+      throw new Error('Application not configured. Please contact the administrator.');
     }
     
     return verifyPassword(password, hashedPassword);

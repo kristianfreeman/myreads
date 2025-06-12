@@ -49,6 +49,11 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Setup test environment
+      run: |
+        # Create .dev.vars file with test password
+        echo 'APP_PASSWORD=$2b$10$EbzfqltyN01YU8i05F/fo.in5ZyOXo3FHP6i4AvrakJqYJPqS6d/q' > .dev.vars
+
     - name: Setup D1 Database
       run: |
         echo "Setting up local D1 database..."
