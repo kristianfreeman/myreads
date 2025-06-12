@@ -8,9 +8,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:8787',
     trace: 'on-first-retry',
   },
+  
+  globalSetup: './e2e/global-setup.ts',
 
   projects: [
     {
@@ -28,8 +30,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
+    command: 'npm run dev:local',
+    url: 'http://localhost:8787',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

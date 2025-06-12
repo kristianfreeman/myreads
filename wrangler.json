@@ -25,7 +25,8 @@
 		{
 			"binding": "DB",
 			"database_name": "myreads-db",
-			"database_id": "4f4cd98a-18af-4d2a-80d5-4e9ab85f2b80"
+			"database_id": "4f4cd98a-18af-4d2a-80d5-4e9ab85f2b80",
+			"migrations_dir": "db/migrations"
 		}
 	]
 

@@ -1,7 +1,6 @@
-import { test as setup } from '@playwright/test';
 import { execSync } from 'child_process';
 
-setup('initialize and seed test database', async () => {
+async function globalSetup() {
   try {
     // Apply migrations to create the database schema
     console.log('Applying database migrations...');
@@ -20,4 +19,6 @@ setup('initialize and seed test database', async () => {
     console.error('Failed to initialize test database:', error);
     throw error;
   }
-});
+}
+
+export default globalSetup;
