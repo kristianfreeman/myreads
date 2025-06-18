@@ -303,8 +303,8 @@ export class BookService {
       await this.db
         .prepare(
           `INSERT OR REPLACE INTO books 
-           (id, title, author, description, cover_image_url, page_count, published_date, publisher, language, isbn) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           (id, title, author, description, cover_image_url, page_count, published_date, publisher, language) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
         .bind(
           book.id,
@@ -315,8 +315,7 @@ export class BookService {
           book.pageCount || null,
           book.publishedDate || null,
           book.publisher || null,
-          book.language || null,
-          null
+          book.language || null
         )
         .run();
     } catch (error) {
